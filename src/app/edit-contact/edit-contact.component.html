@@ -1,0 +1,82 @@
+<div class="content">
+  <h1 class="header">
+    Edit Contact
+  </h1>
+  <form [formGroup]="contactForm" (ngSubmit)="saveContact()">
+    <section>
+      <nav>Name/Info</nav>
+      <div>
+        <con-profile-icon-selector />
+        <input formControlName="firstName" [class.error]="firstName.invalid && firstName.touched" placeholder="First Name" />
+        <!-- <em *ngIf="contactForm.controls.firstName.invalid && contactForm.controls.firstName.touched">Please enter a First Name</em> -->
+        <em *ngIf="firstName.errors?.['required'] && firstName.touched">Please enter a First Name</em>
+        <em *ngIf="firstName.errors?.['minlength'] && firstName.touched">First name must be at least 3 characters.</em>
+        <input formControlName="lastName" placeholder="Last Name" />
+        <!-- date type --><!-- input type="date" formControlName="dateOfBirth" [value]="contactForm.controls.dateOfBirth.value | date: 'yyyy-MM-dd'" placeholder="Date of Birth" /> -->
+        <!--  string type --><!-- input type="date" formControlName="dateOfBirth" placeholder="Date of Birth" /-->
+        <input type="date" formControlName="dateOfBirth" placeholder="Date of Birth" /> <!-- don't need the [value] binding anymore -->
+        <div>
+          <span>Favorites Ranking</span>
+          <input type="range" min="0" max="5" formControlName="favoritesRanking" id="favoritesRanking" placeholder="Favorites Ranking" />
+          <span>{{ contactForm.controls.favoritesRanking.value }}</span>
+        </div>
+        <div>
+          <input type="checkbox" formControlName="personal" id="personal" /> Personal <!-- value="foo" is ignored because of the CheckboxControlValue accessor -->
+        </div>
+      </div>
+    </section>
+    <section>
+      <nav>Phone</nav>
+      <div formGroupName="phone" class="flex-column">
+        <div class="flex-group">
+          <input formControlName="phoneNumber" placeholder="Phone" />
+          <img src="/assets/plus-grey-blue.png" class="add" />
+        </div>        <div class="radio">
+          <!-- <input type="radio" formControlName="phoneType" value="mobile"> Mobile (formControlName is the same as the name of a radio button)
+          <input type="radio" formControlName="phoneType" value="work"> Work
+          <input type="radio" formControlName="phoneType" value="other"> Other -->
+          <span *ngFor="let phoneType of phoneTypeValues"> <!-- use an *ngFor loop -->
+            <input type="radio" formControlName="phoneType" [value]="phoneType.value" [id]="phoneType.value" />
+            <label [for]="phoneType.value">{{ phoneType.title }}</label>
+          </span>
+        </div>
+      </div>
+    </section>
+    <section>
+      <nav>Address</nav>
+      <div>
+        <div formGroupName="address" class="address" [class.error]="contactForm.controls.address.invalid && contactForm.controls.address.dirty">
+          <div class="flex-group">
+            <input formControlName="streetAddress" placeholder="Address" />
+            <img src="/assets/plus-grey-blue.png" class="add" />
+          </div>
+          <input formControlName="city" placeholder="City" />
+          <input formControlName="state" placeholder="State/Region" />
+          <input formControlName="postalCode" placeholder="Zip/Postal Code" />
+          <select formControlName="addressType">
+            <!-- <option value="home">Home</option>
+            <option value="work">Work</option>
+            <option value="other">Other</option> -->
+            <option *ngFor="let addressType of addressTypeValues" [value]="addressType.value">{{ addressType.title }}</option>
+          </select>
+          @if(contactForm.controls.address.invalid && contactForm.controls.address.dirty){<em>Address Incomplete</em>}
+        </div>
+      </div>
+    </section>
+    <section>
+      <nav>Notes</nav>
+      <div>
+        <textarea formControlName="notes" [class.error]="notes.invalid" placeholder="Notes" rows="5"></textarea>
+        @if(notes.errors?.['restrictedWords']){
+          <em>
+            Restricted words found: {{notes.errors?.['restrictedWords']}}.
+          </em>
+        }
+      </div>
+    </section>
+    <div class="buttons">
+      <button class="secondary">Cancel</button>
+      <button type="submit" class="primary" [disabled]="contactForm.invalid">Save</button>
+    </div>
+  </form>
+</div>
