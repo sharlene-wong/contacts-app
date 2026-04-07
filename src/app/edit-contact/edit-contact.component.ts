@@ -19,6 +19,7 @@ export class EditContactComponent implements OnInit {
   addressTypeValues = AddressTypeValues;
   contactForm = this.fb.nonNullable.group({
     id: '',
+    icon: '',
     personal: false,
     //firstName: new FormControl('', Validators.required),
     firstName: ['', [Validators.required, Validators.minLength(3)]],
@@ -94,7 +95,7 @@ export class EditContactComponent implements OnInit {
   }
 
   saveContact() {
-      console.log(this.contactForm.controls.dateOfBirth.value, typeof this.contactForm.controls.dateOfBirth.value);
+      // console.log(this.contactForm.controls.dateOfBirth.value, typeof this.contactForm.controls.dateOfBirth.value);
       this.contactsService.saveContact(this.contactForm.getRawValue()).subscribe({
       next: () => this.router.navigate(['/contacts'])
     });
