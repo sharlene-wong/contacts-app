@@ -26,19 +26,22 @@
       </div>
     </section>
     <section>
-      <nav>Phone</nav>
-      <div formGroupName="phone" class="flex-column">
-        <div class="flex-group">
-          <input formControlName="phoneNumber" placeholder="Phone" />
-          <img src="/assets/plus-grey-blue.png" class="add" />
-        </div>        <div class="radio">
-          <!-- <input type="radio" formControlName="phoneType" value="mobile"> Mobile (formControlName is the same as the name of a radio button)
-          <input type="radio" formControlName="phoneType" value="work"> Work
-          <input type="radio" formControlName="phoneType" value="other"> Other -->
-          <span *ngFor="let phoneType of phoneTypeValues"> <!-- use an *ngFor loop -->
-            <input type="radio" formControlName="phoneType" [value]="phoneType.value" [id]="phoneType.value" />
-            <label [for]="phoneType.value">{{ phoneType.title }}</label>
-          </span>
+      <nav>Phones</nav>
+      <div formArrayName="phones">
+        <div *ngFor="let phone of contactForm.controls.phones.controls; let i = index" [formGroupName]="i" class="flex-column">
+          <div class="flex-group">
+            <input formControlName="phoneNumber" placeholder="Phone" />
+            <img src="/assets/plus-grey-blue.png" class="add" (click)="addPhone()" />
+          </div>
+          <div class="radio">
+            <!-- <input type="radio" formControlName="phoneType" value="mobile"> Mobile (formControlName is the same as the name of a radio button)
+            <input type="radio" formControlName="phoneType" value="work"> Work
+            <input type="radio" formControlName="phoneType" value="other"> Other -->
+            <span *ngFor="let phoneType of phoneTypeValues"> <!-- use an *ngFor loop -->
+              <input type="radio" formControlName="phoneType" [value]="phoneType.value" [id]="phoneType.value" />
+              <label [for]="phoneType.value">{{ phoneType.title }}</label>
+            </span>
+          </div>
         </div>
       </div>
     </section>

@@ -27,10 +27,12 @@ export class EditContactComponent implements OnInit {
     dateOfBirth: <Date | null>null, // adding the type fixes setValues method
     //dateOfBirth: '', // keeping it as a string to avoid issues with the date input, which expects a string in the format 'yyyy-MM-dd'
     favoritesRanking: <number | null>null, // adding the type fixes setValues method
-    phone: this.fb.nonNullable.group({
-      phoneNumber: '',
-      phoneType: '',
-    }),
+    // phone: this.fb.nonNullable.group({
+    //   phoneNumber: '',
+    //   phoneType: '',
+    // }),
+    // phone: this.createPhoneGroup(),
+    phones: this.fb.array([this.createPhoneGroup()]),
     address: this.fb.nonNullable.group({
       streetAddress: ['', Validators.required],
       city: ['', Validators.required],
@@ -72,6 +74,12 @@ export class EditContactComponent implements OnInit {
     this.contactsService.getContact(contactId).subscribe((contact) => {
       if (!contact) return;
 
+      for (let i = 1; i < contact.phones.length; i++) {
+        this.addPhone();
+      }
+
+      this.contactForm.setValue(contact);
+
       // const names = { firstName: contact.firstName, lastName: contact.lastName };
       // this.contactForm.patchValue(names); // patchValue allows you to update only part of the form
 
@@ -92,6 +100,17 @@ export class EditContactComponent implements OnInit {
 
       this.contactForm.setValue(contact); // One line vs 13 lines of code.
     });
+  }
+
+  createPhoneGroup() {
+    return this.fb.nonNullable.group({
+      phoneNumber: '',
+      phoneType: '',
+    });
+  }
+
+  addPhone() {
+    this.contactForm.controls.phones.push(this.createPhoneGroup());
   }
 
   saveContact() {
