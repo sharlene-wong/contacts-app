@@ -8,6 +8,7 @@ import { AddressTypeValues } from '../contacts/contact.model';
 import { restrictedWords } from '../validators/restrictive-words.validator';
 import { DateValueAccessorDirective } from '../date-value-accessor/date-value-accessor.directive';
 import { ProfileIconSelectorComponent } from "../profile-icon-selector/profile-icon-selector.component";
+import { distinctUntilChanged } from 'rxjs';
 
 @Component({
   imports: [CommonModule, ReactiveFormsModule, DateValueAccessorDirective, ProfileIconSelectorComponent],
@@ -102,11 +103,35 @@ export class EditContactComponent implements OnInit {
     });
   }
 
+  stringifyCompare(a: any, b: any) {
+    return JSON.stringify(a) === JSON.stringify(b);
+  }
+
   createPhoneGroup() {
-    return this.fb.nonNullable.group({
+    const phoneGroup = this.fb.nonNullable.group({
       phoneNumber: '',
       phoneType: '',
+      preferred: false,
     });
+
+    phoneGroup.controls.preferred.valueChanges
+      // valueChanges is on all Abstract controls including form groups. Instead of valueChanges you can use statusChanges, which is triggered when the validation status changes, but in this case we want to trigger when the value changes, not the validation status.
+      // rxjs - prevent an infinite loop of valueChanges when adding/removing the required validator, only trigger when the value actually changes
+      // compare a and b. If they are the same, return true, which means the value has not changed and the subscription will not be triggered.
+      // If they are different, return false, which means the value has changed and the subscription will be triggered.
+      .pipe(distinctUntilChanged((a, b) => this.stringifyCompare(a, b)))
+      .subscribe(value => {
+        if (value) {
+          phoneGroup.controls.phoneNumber.addValidators([Validators.required]);
+        }
+        else {
+          phoneGroup.controls.phoneNumber.removeValidators([Validators.required]);
+        }
+
+        phoneGroup.controls.phoneNumber.updateValueAndValidity(); // this is needed to trigger the validation after adding/removing the validator, need to prevent an infinite loop of the valueChanges
+      });
+
+    return phoneGroup;
   }
 
   addPhone() {
@@ -114,8 +139,8 @@ export class EditContactComponent implements OnInit {
   }
 
   saveContact() {
-      // console.log(this.contactForm.controls.dateOfBirth.value, typeof this.contactForm.controls.dateOfBirth.value);
-      this.contactsService.saveContact(this.contactForm.getRawValue()).subscribe({
+    // console.log(this.contactForm.controls.dateOfBirth.value, typeof this.contactForm.controls.dateOfBirth.value);
+    this.contactsService.saveContact(this.contactForm.getRawValue()).subscribe({
       next: () => this.router.navigate(['/contacts'])
     });
   }
