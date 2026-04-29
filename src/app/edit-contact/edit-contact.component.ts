@@ -8,7 +8,7 @@ import { AddressTypeValues } from '../contacts/contact.model';
 import { restrictedWords } from '../validators/restrictive-words.validator';
 import { DateValueAccessorDirective } from '../date-value-accessor/date-value-accessor.directive';
 import { ProfileIconSelectorComponent } from "../profile-icon-selector/profile-icon-selector.component";
-import { distinctUntilChanged } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   imports: [CommonModule, ReactiveFormsModule, DateValueAccessorDirective, ProfileIconSelectorComponent],
@@ -69,7 +69,12 @@ export class EditContactComponent implements OnInit {
 
   ngOnInit() {
     const contactId = this.route.snapshot.params['id'];
-    if (!contactId) return
+    if (!contactId) {
+      this.subscribeToAddressChanges();
+
+      return;
+    }
+
 
     // returns an Observable so you need a subscription to get the data
     this.contactsService.getContact(contactId).subscribe((contact) => {
@@ -78,8 +83,6 @@ export class EditContactComponent implements OnInit {
       for (let i = 1; i < contact.phones.length; i++) {
         this.addPhone();
       }
-
-      this.contactForm.setValue(contact);
 
       // const names = { firstName: contact.firstName, lastName: contact.lastName };
       // this.contactForm.patchValue(names); // patchValue allows you to update only part of the form
@@ -100,11 +103,34 @@ export class EditContactComponent implements OnInit {
       // this.contactForm.controls.address.controls.addressType.setValue(contact.address.addressType);
 
       this.contactForm.setValue(contact); // One line vs 13 lines of code.
+      this.subscribeToAddressChanges();
     });
   }
 
   stringifyCompare(a: any, b: any) {
     return JSON.stringify(a) === JSON.stringify(b);
+  }
+
+  subscribeToAddressChanges() {
+    const addressGroup = this.contactForm.controls.address;
+    addressGroup.valueChanges
+      .pipe(distinctUntilChanged(this.stringifyCompare))
+      .subscribe(() => {
+        for (const controlName in addressGroup.controls) {
+          addressGroup.get(controlName)?.removeValidators([Validators.required]);
+          addressGroup.get(controlName)?.updateValueAndValidity(); // this is needed to trigger the validation after adding/removing the validator
+        }
+      });
+
+    addressGroup.valueChanges
+      .pipe(debounceTime(2000), distinctUntilChanged(this.stringifyCompare))
+      .subscribe(() => {
+        for (const controlName in addressGroup.controls) {
+          addressGroup.get(controlName)?.addValidators([Validators.required]);
+          addressGroup.get(controlName)?.updateValueAndValidity(); // this is needed to trigger the validation after adding/removing the validator
+        }
+        addressGroup.updateValueAndValidity(); // this is needed to trigger the validation after adding/removing the validator
+      });
   }
 
   createPhoneGroup() {
