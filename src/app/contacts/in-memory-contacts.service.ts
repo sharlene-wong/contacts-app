@@ -52,7 +52,7 @@ export class InMemoryContactsApi implements InMemoryDbService {
         dateOfBirth: new Date('1986/11/08'),
         favoritesRanking: 1,
         phones: [{ phoneNumber: '555-123-4567', phoneType: 'mobile', preferred: false },
-          { phoneNumber: '555-321-7890', phoneType: 'work', preferred: false }],
+        { phoneNumber: '555-321-7890', phoneType: 'work', preferred: false }],
         address: {
           streetAddress: '123 Merriment Avenue',
           city: 'Dorado City',
